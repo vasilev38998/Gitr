@@ -50,6 +50,9 @@ return [
         'share' => 'Поделиться',
         'loading' => 'Загрузка...',
         'no_posts' => 'Нет постов',
+        'welcome' => 'Добро пожаловать в Gitr',
+        'welcome_subtitle' => 'Социальная сеть для общения и обмена идеями',
+        'welcome_user' => 'Добро пожаловать, :username!',
     ],
 
     // Posts section
@@ -147,6 +150,8 @@ return [
         'success' => 'Успешно',
         'warning' => 'Предупреждение',
         'info' => 'Информация',
+        'rights_reserved' => 'Все права защищены.',
+        'welcome_to_gitr' => 'Добро пожаловать в Gitr!',
     ],
 
     // Search section

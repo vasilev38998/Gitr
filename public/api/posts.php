@@ -1,6 +1,13 @@
 <?php
 
-header('Content-Type: application/json');
+// Start session
+session_start();
+
+// Include localization helpers
+require_once dirname(__DIR__) . '/src/Localization.php';
+require_once dirname(__DIR__) . '/src/helpers.php';
+
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -9,41 +16,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-require_once __DIR__ . '/../../src/Database.php';
-require_once __DIR__ . '/../../src/Auth.php';
-require_once __DIR__ . '/../../src/Post.php';
-require_once __DIR__ . '/../../src/Like.php';
-require_once __DIR__ . '/../../src/Comment.php';
+// Simple mock data for demonstration
+$mockPosts = [
+    [
+        'id' => 1,
+        'content' => 'Добро пожаловать в Gitr! 🎉',
+        'username' => 'admin',
+        'created_at' => date('Y-m-d H:i:s', strtotime('-2 hours')),
+        'likes_count' => 5
+    ],
+    [
+        'id' => 2,
+        'content' => 'Это демо-пост для тестирования функционала.',
+        'username' => 'user1',
+        'created_at' => date('Y-m-d H:i:s', strtotime('-1 hour')),
+        'likes_count' => 2
+    ],
+    [
+        'id' => 3,
+        'content' => 'Отличная социальная сеть для общения!',
+        'username' => 'user2',
+        'created_at' => date('Y-m-d H:i:s', strtotime('-30 minutes')),
+        'likes_count' => 1
+    ]
+];
 
 try {
-    Auth::requireAuth();
-    
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Method not allowed');
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        // Return all posts
+        echo json_encode([
+            'success' => true,
+            'data' => $mockPosts,
+            'message' => trans('common.success')
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
     }
     
-    $input = json_decode(file_get_contents('php://input'), true);
-    
-    if (!isset($input['content']) || empty(trim($input['content']))) {
-        throw new Exception('Content is required');
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Check if user is authenticated
+        if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+            throw new Exception(trans('errors.unauthorized'));
+        }
+        
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($input['content']) || empty(trim($input['content']))) {
+            throw new Exception(trans('errors.required_field'));
+        }
+        
+        // Create new post
+        $newPost = [
+            'id' => count($mockPosts) + 1,
+            'content' => trim($input['content']),
+            'username' => $_SESSION['user_username'] ?? 'user',
+            'created_at' => date('Y-m-d H:i:s'),
+            'likes_count' => 0
+        ];
+        
+        echo json_encode([
+            'success' => true,
+            'message' => trans('posts.post_created'),
+            'data' => $newPost
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
     }
     
-    $post = new Post();
-    $postId = $post->create(Auth::id(), trim($input['content']));
-    
-    // Get the created post with user data
-    $createdPost = $post->getById($postId);
-    
-    echo json_encode([
-        'success' => true,
-        'message' => 'Post created successfully',
-        'post' => $createdPost
-    ]);
+    // Method not allowed
+    http_response_code(405);
+    throw new Exception(trans('errors.validation_failed'));
     
 } catch (Exception $e) {
-    http_response_code(400);
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
-    ]);
+        'error' => $e->getMessage(),
+        'message' => trans('errors.internal_error')
+    ], JSON_UNESCAPED_UNICODE);
 }

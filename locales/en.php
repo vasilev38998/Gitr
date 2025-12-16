@@ -50,6 +50,9 @@ return [
         'share' => 'Share',
         'loading' => 'Loading...',
         'no_posts' => 'No posts',
+        'welcome' => 'Welcome to Gitr',
+        'welcome_subtitle' => 'A social network for communication and idea sharing',
+        'welcome_user' => 'Welcome, :username!',
     ],
 
     // Posts section
@@ -147,6 +150,8 @@ return [
         'success' => 'Success',
         'warning' => 'Warning',
         'info' => 'Info',
+        'rights_reserved' => 'All rights reserved.',
+        'welcome_to_gitr' => 'Welcome to Gitr!',
     ],
 
     // Search section
