@@ -39,6 +39,11 @@ class Auth
         $_SESSION['user_id'] = $userId;
     }
     
+    public static function login($userId)
+    {
+        self::setUserId($userId);
+    }
+    
     public static function logout()
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -63,7 +68,7 @@ class Auth
             $db = Database::getInstance();
             
             $user = $db->fetch(
-                "SELECT id, password FROM users WHERE email = ? AND deleted_at IS NULL",
+                "SELECT id, password_hash FROM users WHERE email = ?",
                 [$email]
             );
             
@@ -71,7 +76,7 @@ class Auth
                 return null;
             }
             
-            if (!password_verify($password, $user['password'])) {
+            if (!password_verify($password, $user['password_hash'])) {
                 return null;
             }
             
@@ -92,7 +97,7 @@ class Auth
             }
             
             $existingUser = $db->fetch(
-                "SELECT id FROM users WHERE email = ? AND deleted_at IS NULL",
+                "SELECT id FROM users WHERE email = ?",
                 [$email]
             );
             
@@ -101,7 +106,7 @@ class Auth
             }
             
             $existingUsername = $db->fetch(
-                "SELECT id FROM users WHERE username = ? AND deleted_at IS NULL",
+                "SELECT id FROM users WHERE username = ?",
                 [$username]
             );
             
@@ -117,7 +122,7 @@ class Auth
             }
             
             $db->query(
-                "INSERT INTO users (username, email, password, language, created_at) VALUES (?, ?, ?, ?, NOW())",
+                "INSERT INTO users (username, email, password_hash, language, created_at) VALUES (?, ?, ?, ?, NOW())",
                 [$username, $email, $passwordHash, $language]
             );
             
