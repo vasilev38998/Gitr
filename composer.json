@@ -1,0 +1,16 @@
+{
+  "name": "gitr/social-network",
+  "description": "Base PHP social network project (Ubuntu 22.04 / Apache / MySQL)",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}
