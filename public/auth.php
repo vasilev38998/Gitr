@@ -6,6 +6,12 @@ session_start();
 // Include autoloader and helpers
 require_once dirname(__DIR__) . '/src/Localization.php';
 require_once dirname(__DIR__) . '/src/helpers.php';
+require_once dirname(__DIR__) . '/src/Auth.php';
+
+// Redirect to feed if already logged in
+if (Auth::check()) {
+    redirect('/feed');
+}
 
 $action = $_GET['action'] ?? 'login';
 $errors = [];
@@ -14,44 +20,78 @@ $message = '';
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? 'login';
+    $csrfToken = $_POST['csrf_token'] ?? '';
     
-    if ($action === 'login') {
-        $email = $_POST['email'] ?? '';
-        $password = $_POST['password'] ?? '';
-        
-        if (empty($email)) {
-            $errors[] = trans('errors.required_field');
-        }
-        if (empty($password)) {
-            $errors[] = trans('errors.required_field');
-        }
-        
-        if (empty($errors)) {
-            // Simulate successful login
-            $message = trans('auth.sign_in') . ' - ' . trans('common.success');
-        }
-    } else if ($action === 'register') {
-        $username = $_POST['username'] ?? '';
-        $email = $_POST['email'] ?? '';
-        $password = $_POST['password'] ?? '';
-        $confirm_password = $_POST['confirm_password'] ?? '';
-        
-        if (empty($username)) {
-            $errors[] = trans('errors.required_field');
-        }
-        if (empty($email)) {
-            $errors[] = trans('errors.required_field');
-        }
-        if (empty($password)) {
-            $errors[] = trans('errors.required_field');
-        }
-        if ($password !== $confirm_password) {
-            $errors[] = trans('errors.passwords_do_not_match');
-        }
-        
-        if (empty($errors)) {
-            // Simulate successful registration
-            $message = trans('auth.sign_up') . ' - ' . trans('common.success');
+    if (!verify_csrf_token($csrfToken)) {
+        $errors[] = trans('errors.validation_failed');
+    } else {
+        if ($action === 'login') {
+            $email = trim($_POST['email'] ?? '');
+            $password = $_POST['password'] ?? '';
+            
+            if (empty($email)) {
+                $errors[] = trans('errors.required_field');
+            }
+            if (empty($password)) {
+                $errors[] = trans('errors.required_field');
+            }
+            
+            if (empty($errors)) {
+                $userId = Auth::attemptLogin($email, $password);
+                
+                if ($userId !== null) {
+                    Auth::setUserId($userId);
+                    redirect('/feed');
+                } else {
+                    $errors[] = trans('errors.invalid_credentials');
+                }
+            }
+        } else if ($action === 'register') {
+            $username = trim($_POST['username'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $password = $_POST['password'] ?? '';
+            $confirm_password = $_POST['confirm_password'] ?? '';
+            
+            if (empty($username)) {
+                $errors[] = trans('errors.required_field');
+            }
+            if (empty($email)) {
+                $errors[] = trans('errors.required_field');
+            }
+            if (empty($password)) {
+                $errors[] = trans('errors.required_field');
+            }
+            if ($password !== $confirm_password) {
+                $errors[] = trans('errors.passwords_do_not_match');
+            }
+            if (!empty($password) && strlen($password) < 6) {
+                $errors[] = trans('errors.password_too_short');
+            }
+            if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = trans('errors.invalid_email');
+            }
+            
+            if (empty($errors)) {
+                try {
+                    $userId = Auth::attemptRegister($username, $email, $password);
+                    
+                    if ($userId !== null) {
+                        Auth::setUserId($userId);
+                        redirect('/feed');
+                    }
+                } catch (Exception $e) {
+                    $errorMessage = $e->getMessage();
+                    if (strpos($errorMessage, 'Email already exists') !== false) {
+                        $errors[] = trans('errors.email_already_exists');
+                    } else if (strpos($errorMessage, 'Username already exists') !== false) {
+                        $errors[] = trans('errors.username_already_exists');
+                    } else if (strpos($errorMessage, 'Password too short') !== false) {
+                        $errors[] = trans('errors.password_too_short');
+                    } else {
+                        $errors[] = trans('errors.internal_error');
+                    }
+                }
+            }
         }
     }
 }
@@ -263,6 +303,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form id="login-form" method="POST" class="<?php echo $action === 'login' ? '' : 'hidden'; ?>">
                 <h2><?php echo trans('auth.sign_in'); ?></h2>
                 <input type="hidden" name="action" value="login">
+                <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                 
                 <div class="form-group">
                     <label><?php echo trans('auth.email'); ?></label>
@@ -295,6 +336,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form id="register-form" method="POST" class="<?php echo $action === 'register' ? '' : 'hidden'; ?>">
                 <h2><?php echo trans('auth.sign_up'); ?></h2>
                 <input type="hidden" name="action" value="register">
+                <input type="hidden" name="csrf_token" value="<?php echo generate_csrf_token(); ?>">
                 
                 <div class="form-group">
                     <label><?php echo trans('auth.username'); ?></label>
