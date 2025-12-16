@@ -1,0 +1,14 @@
+/vendor/
+
+# Local конфиги (секреты)
+/config/config.php
+/config.php
+
+# Logs
+/logs/
+*.log
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
