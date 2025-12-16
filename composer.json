@@ -1,18 +1,16 @@
 {
-    "name": "your-org/socialnets",
-    "description": "Social Network Project",
-    "type": "project",
-    "require": {
-        "php": "^8.0",
-        "ext-json": "*",
-        "ext-pdo": "*"
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Developer",
-            "email": "dev@example.com"
-        }
-    ],
-    "minimum-stability": "stable"
+  "name": "gitr/social-network",
+  "description": "Base PHP social network project (Ubuntu 22.04 / Apache / MySQL)",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
 }
