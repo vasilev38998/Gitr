@@ -68,7 +68,7 @@ class Auth
             $db = Database::getInstance();
             
             $user = $db->fetch(
-                "SELECT id, password_hash FROM users WHERE email = ?",
+                "SELECT id, password_hash, language FROM users WHERE email = ?",
                 [$email]
             );
             
@@ -79,6 +79,11 @@ class Auth
             if (!password_verify($password, $user['password_hash'])) {
                 return null;
             }
+            
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $_SESSION['user_language'] = $user['language'] ?? 'ru';
             
             return (int) $user['id'];
         } catch (Exception $e) {
@@ -116,7 +121,7 @@ class Auth
             
             $passwordHash = password_hash($password, PASSWORD_BCRYPT);
             
-            $language = 'en';
+            $language = 'ru';
             if (function_exists('get_language')) {
                 $language = get_language();
             }

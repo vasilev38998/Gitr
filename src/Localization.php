@@ -11,7 +11,7 @@ class Localization
     /**
      * Default language
      */
-    private const DEFAULT_LANGUAGE = 'en';
+    private const DEFAULT_LANGUAGE = 'ru';
 
     /**
      * Supported languages
