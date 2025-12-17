@@ -69,7 +69,7 @@ SET @col_exists = (
 );
 
 SET @sql = IF(@col_exists = 0,
-    'ALTER TABLE users ADD COLUMN language VARCHAR(5) DEFAULT "en" AFTER avatar_url',
+    'ALTER TABLE users ADD COLUMN language VARCHAR(10) DEFAULT "ru" AFTER avatar_url',
     'SELECT "Column language already exists" AS message'
 );
 

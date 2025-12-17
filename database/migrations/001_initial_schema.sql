@@ -13,7 +13,7 @@ CREATE TABLE users (
     location VARCHAR(255),
     website VARCHAR(255),
     avatar_url VARCHAR(255),
-    language VARCHAR(5) DEFAULT 'en',
+    language VARCHAR(10) DEFAULT 'ru',
     theme VARCHAR(20) DEFAULT 'light',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

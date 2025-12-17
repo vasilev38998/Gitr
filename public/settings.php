@@ -6,6 +6,8 @@ session_start();
 // Include autoloader and helpers
 require_once dirname(__DIR__) . '/src/Localization.php';
 require_once dirname(__DIR__) . '/src/helpers.php';
+require_once dirname(__DIR__) . '/src/Auth.php';
+require_once dirname(__DIR__) . '/src/Database.php';
 
 $message = '';
 
@@ -14,6 +16,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['language'])) {
     $language = $_POST['language'];
     if (is_language_supported($language)) {
         set_language($language);
+        
+        if (Auth::check()) {
+            try {
+                $db = Database::getInstance();
+                $userId = Auth::id();
+                $db->query(
+                    "UPDATE users SET language = ? WHERE id = ?",
+                    [$language, $userId]
+                );
+            } catch (Exception $e) {
+                error_log('Failed to save language preference to database: ' . $e->getMessage());
+            }
+        }
+        
         $message = trans('common.success');
     }
 }

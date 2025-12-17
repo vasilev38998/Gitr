@@ -13,7 +13,7 @@ class Profile
     
     public function getById($id)
     {
-        $sql = "SELECT id, username, email, bio, avatar, followers_count, following_count, created_at 
+        $sql = "SELECT id, username, email, bio, avatar, followers_count, following_count, language, created_at 
                 FROM users 
                 WHERE id = ?";
         
@@ -22,7 +22,7 @@ class Profile
     
     public function getByUsername($username)
     {
-        $sql = "SELECT id, username, email, bio, avatar, followers_count, following_count, created_at 
+        $sql = "SELECT id, username, email, bio, avatar, followers_count, following_count, language, created_at 
                 FROM users 
                 WHERE username = ?";
         
@@ -31,7 +31,7 @@ class Profile
     
     public function update($userId, $data)
     {
-        $allowedFields = ['bio', 'avatar', 'username', 'email'];
+        $allowedFields = ['bio', 'avatar', 'username', 'email', 'language'];
         $fields = [];
         $values = [];
         
